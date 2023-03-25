@@ -1,0 +1,290 @@
+---
+title: "SQL Assignment Part 1"
+author: "Devin Cline"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+This assignment is worth 100 points. There are 15 questions (1a, 1b, 1c, 2a, etc...) and each question is worth 6.5 points each. This assignment is due Tuesday March 14 by 11:59pm CST. 
+
+
+Once you have completed the assignment, render the RMarkdown document to a pdf. Save the pdf as 'SQL_Assignment_Part1)your_last_name.' Upload the pdf to the SQL Assignment Part 1 link in Module 4 in Canvas.
+
+Remember, the file will not render if the View() function is not either removed or commented out or if there are any errors in the code chunks.
+
+Do not forget to call the sqldf library each time you invoke a new R session (that is, you exit and re-enter RStudio Cloud). The sqldf package is already installed in this project.
+
+```{r, message=F, warning=F}
+#call the sqldf package
+library(sqldf)
+```
+
+# Data Sets and Scenario
+
+You are going to use three data tables in this assignment. These data tables are related to information about films. The name of the tables are films, reviews, and people.
+
+
+
+Run the following code chunk below that will create the three tables in your R Studio environment.
+
+```{r}
+#create data table films
+films <- read.csv("/cloud/project/data/films.csv")
+
+#create the data table people
+people <- read.csv("/cloud/project/data/people.csv")
+
+#create the table reviews
+reviews <- read.csv("/cloud/project/data/reviews.csv")
+
+```
+
+# Time to Query!
+
+1a. Count the number of records in the people table, aliasing the result as count_records.
+
+Hint: The count should be 8397.
+
+```{r}
+
+sqldf("SELECT COUNT(*) AS count_records
+       FROM people")
+
+```
+
+1b. Count the number of languages and countries in the films data table. Use aliases count_languages and count_countries, respectively.
+
+Hint: You can use multiple COUNT() statements in a SELECT function. There should be 48 languages and 65 countries.
+
+```{r}
+
+sqldf("SELECT COUNT(DISTINCT language) AS count_languages, 
+      COUNT(DISTINCT country) AS count_countries
+      FROM films")
+
+```
+
+1c. Select the title of every film that doesn't have a budget associated with it and use the alias no_budget_info. Use the films data table. Limit the report to 10 rows. You can run the code chunk below to see what the first 10 rows should look like.
+
+```{r}
+
+sqldf("SELECT title AS no_budget_info
+       FROM films
+       WHERE budget IS NULL LIMIT 10")
+
+```
+
+
+```{r, echo=FALSE, eval=FALSE}
+#run this code chunk to see solution to #1c
+knitr::include_graphics("/cloud/project/images/1c.PNG")
+```
+
+
+2a. Generate a report that has film_id and facebook_likes with less than 1,000 likes from the reviews table. Limit the report to 10 rows. You can run the code chunk below to see what the first 10 rows should look like.
+
+```{r}
+
+sqldf("SELECT film_id, facebook_likes
+       FROM reviews
+       WHERE facebook_likes < 1000 LIMIT 10")
+
+```
+
+
+```{r, echo=FALSE, eval=FALSE}
+#run this code chunk to see solution to #2a
+knitr::include_graphics("/cloud/project/images/2a.PNG")
+```
+
+
+2b. Count how many records have a num_votes of at least 100,000 from the reviews table; use the alias films_over_100K_votes.
+Hint: The count should be 1211.
+
+```{r}
+
+sqldf("SELECT COUNT(*) AS films_over_100k_votes
+       FROM reviews
+       WHERE num_votes > 100000")
+
+```
+
+2c. Select and count the language column using the alias count_spanish from the films data table.
+Apply a filter to select only Spanish from the language field.
+
+Hint: There should 40 films in Spanish.
+
+```{r}
+
+sqldf("SELECT language, COUNT(language) AS count_spanish
+       FROM films
+       WHERE language = 'Spanish'")
+
+```
+
+3. Create a report that meets the following requirements.
+
+a. Count the unique titles from the films data table and use the alias nineties_english_films_for_teens.
+b. Filter to include only movies with a release_year from 1990 to 1999, inclusive.
+c. Add another filter narrowing your query down to English-language films.
+d. Add a final filter to select only films with 'G', 'PG', 'PG-13' certifications.
+
+Hint: The count should be 310.
+
+```{r}
+
+sqldf("SELECT COUNT(DISTINCT title) AS ninteties_english_films_for_teens
+       FROM films
+       WHERE release_year BETWEEN 1990 AND 1999 
+       AND language = 'English'  
+       AND certification IN ('G', 'PG', 'PG-13')")
+
+```
+
+4a. Calculate the average amount grossed by all films whose titles start with the letter 'A' and alias with avg_gross_A. Round the average to zero decimal places.
+
+Hint: The average should be $47,893,236 (no commas and dollar signs will be printed).
+```{r}
+
+sqldf("SELECT ROUND(AVG(gross), 2) AS avg_gross_A
+       FROM films
+       WHERE title LIKE 'A%'")
+
+```
+
+4b. Select the lowest gross film in 2016 and use the alias lowest_gross. The report should contain the title of the film.
+
+Hint: The name of the film is Operation Chromite and the gross amount is $31,662 (no commas or dollar signs will be printed).
+
+```{r}
+
+sqldf("SELECT title, MIN(gross) AS lowest_gross
+       FROM films
+       WHERE release_year = 2016")
+
+```
+
+5a. Select the title and duration from every film, from longest duration to shortest. Use the films data table. Limit the report to 10 rows. You can run the code chunk below to see what the first 10 rows should look like.
+
+```{r}
+
+sqldf("SELECT title, durations
+       FROM films
+       ORDER BY durations DESC LIMIT 10")
+
+```
+
+
+```{r, echo=FALSE, eval=FALSE}
+#run this code chunk to see solution to #5a
+knitr::include_graphics("/cloud/project/images/5a.PNG")
+```
+
+5b. The ORDER BY can be used to sort multiple columns.  It will sort by the first column specified, then sort by the next, and so on. Columns on the ORDER BY function should be separated by commas with no comma after the last column.
+
+Create a SQL query that will generate a report exactly as shown in the code chunk below. Limit the report to 10 rows. 
+
+
+```{r, echo=FALSE, eval=FALSE}
+#run this code chunk to see the report your code should generate for #5b
+knitr::include_graphics("/cloud/project/images/5b.PNG")
+```
+
+```{r}
+
+sqldf("SELECT title, release_year, durations
+       FROM films
+       WHERE release_year IS NOT NULL AND durations IS NOT NULL
+       ORDER BY release_year, durations DESC LIMIT 10")
+
+```
+
+6a.Select the release_year and count of films released in each year aliased as film_count. Do not include records where release_year is missing. Use the films data table.Limit the report to 10 rows. You can run the code chunk below to see what the first 10 rows should look like.
+
+```{r}
+
+sqldf("SELECT release_year, COUNT(title) AS film_count
+       FROM films
+       WHERE release_year IS NOT NULL
+       GROUP BY release_year LIMIT 10")
+
+```
+
+
+```{r, echo=FALSE, eval=FALSE}
+#run this code chunk to see solution to #6a
+knitr::include_graphics("/cloud/project/images/6a.PNG")
+```
+
+6b. GROUP BY becomes more useful when it is used on multiple columns or in conjunction with ORDER BY. You apply GROUP BY to multiple columns in the same manner you do ORDER BY (multiple columns separated by commas with no comma after the last column).
+
+You want to understand budget changes throughout the years in individual countries.
+
+Select the release_year, country, and the maximum budget aliased as max_budget for each year and each country. Sort the report by release_year and country. You do not want the report to include missing values for release_year or budget. Limit the report to 10 rows. You can run the code chunk below to see what the first 10 rows should look like.
+
+```{r}
+
+sqldf("SELECT release_year, country, MAX(budget) AS max_budget
+       FROM films
+       WHERE release_year IS NOT NULL AND budget IS NOT NULL
+       GROUP BY country, release_year
+       ORDER BY release_year, country LIMIT 10")
+
+```
+
+
+```{r, echo=FALSE, eval=FALSE}
+#run this code chunk to see solution to #6b
+knitr::include_graphics("/cloud/project/images/6b.PNG")
+```
+
+7. Combining filtering and sorting provides you greater interpretability by ordering reports. You are interested in what countries have the highest average film budgets.
+
+Create a report that meets the following requirements.
+a. Select the country and the average budget as average_budget, from the films table.
+b. Group the results by country.
+c. Filter the results to countries with an average budget of more than one billion (1000000000).
+d. Sort by descending order of the average_budget.
+
+You can run the code chunk below to see what report should look like. 
+
+```{r}
+
+sqldf("SELECT country, AVG(budget) AS average_budget
+       FROM films
+       GROUP BY country
+       HAVING average_budget > 1000000000
+       ORDER BY average_budget DESC")
+
+```
+
+```{r, echo=FALSE, eval=FALSE}
+#run this code chunk to see solution to #7
+knitr::include_graphics("/cloud/project/images/7.PNG")
+```
+
+8. Generate a report that that returns the average budget and gross earnings for films each year after 1990 if the average gross budget is greater than 60 million.
+
+This query is a real-world scenario. Many times, you will be asked to write a more complex query that answers a specific business question that cannot be found by playing around in applications like Excel.
+
+To provide you some assistance, you can run the code chunk below to see what the final report should look like. 
+
+```{r}
+
+sqldf("SELECT country, release_year, AVG(budget) AS avg_budget, AVG(gross) AS avg_gross
+       FROM films
+       WHERE release_year > 1990 
+       GROUP BY release_year
+       HAVING avg_gross > 60000000
+       ORDER BY avg_budget DESC")
+
+
+```
+
+```{r, echo=FALSE, eval=FALSE}
+#run this code chunk to see solution to #8
+knitr::include_graphics("/cloud/project/images/8.PNG")
+```

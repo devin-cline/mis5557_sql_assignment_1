@@ -1,0 +1,12 @@
+---
+title: "install R packages"
+author: "Billie Anderson"
+date: "2023-01-26"
+output: html_document
+---
+
+This is the base project. As we need and use different packages in the class, I will install them in this project and 'push' this project' with all created assignments.
+
+```{r}
+install.packages(c("readxl", "sqldf"))
+```
